@@ -1,0 +1,20 @@
+# extends: ["spectral:oas", "spectral:asyncapi"]
+functions: ["ensureURIPathsFollowNamingStandard"]
+rules:
+  paths-use-kebab-case:
+      description: All YAML/JSON paths MUST follow kebab-case
+      severity: error
+      recommended: true
+      message: "{{property}} is not kebab-case: {{error}}"
+      given: $.paths[*]~
+      then:
+        function: pattern
+        functionOptions:
+          match: "^\/([a-z0-9]+(-[a-z0-9]+)*)?(\/[a-z0-9]+(-[a-z0-9]+)*|\/{.+})*$" # doesn't allow /asasd{asdas}sadas pattern or not closed braces
+  uri-paths-must-follow-naming-standard:
+    description: URI paths must follow the naming standard
+    given: "$.paths"
+    severity: error
+    message: '{{error}}'
+    then:
+      function: "ensureURIPathsFollowNamingStandard"
