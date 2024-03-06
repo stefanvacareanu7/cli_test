@@ -1,0 +1,236 @@
+openapi: 3.0.3
+servers:
+  - url: "http://localhost"
+info:
+  description: Grmus-at-spectral-bamboo API
+  version: 0.1.0
+  contact:
+    name: Placeholder
+    email: email@example.com
+  title: Grmus-at-spectral-bamboo API
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: weather
+paths:
+  /weather:
+    get:
+      summary: Get a weather report
+      description: Get a weather report
+      operationId: getWeather
+      tags:
+        - weather
+      parameters:
+        - name: city
+          description: A city to refine your weather search
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+            pattern: '^[A-Za-z]*'
+          example: Boston
+      responses:
+        '200':
+          description: A weather report
+          headers:
+            Date:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Content-Encoding:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherResponse'
+        '400':
+          description: >-
+            Unable to provide a weather report due to invalid or insufficient data
+            provided by the client
+          headers:
+            Date:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Content-Encoding:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Client is not permitted to use this operation
+          headers:
+            Date:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Content-Encoding:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          headers:
+            Date:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Content-Encoding:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    WeatherResponse:
+      type: object
+      properties:
+        alerts:
+          type: array
+          description: An array of weather alerts
+          items:
+            $ref: '#/components/schemas/WeatherAlert'
+        humidity:
+          $ref: '#/components/schemas/WeatherResponseHumidity'
+        temperature:
+          $ref: '#/components/schemas/WeatherResponseTemperature'
+        updated:
+          type: string
+          description: Last updated date time string
+        wind:
+          $ref: '#/components/schemas/WeatherResponseWind'
+      required:
+        - alerts
+        - humidity
+        - temperature
+        - updated
+        - wind
+    WeatherAlert:
+      type: object
+      description: A weather alert
+      properties:
+        active:
+          type: boolean
+          description: Boolean value for an active weather alert
+        type:
+          type: string
+          description: The type of weather alert
+    WeatherResponseHumidity:
+      type: object
+      description: Humidity information
+      properties:
+        relative:
+          type: integer
+          description: Relative humidity
+    WeatherResponseTemperature:
+      type: object
+      description: Temperature information
+      properties:
+        unit:
+          type: string
+          description: Unit of temperature
+        value:
+          type: integer
+          description: Temperature value
+    WeatherResponseWind:
+      type: object
+      description: Wind information
+      properties:
+        advisory:
+          type: boolean
+          description: Wind advisory in effect
+        direction:
+          type: string
+          description: Wind direction
+        speed:
+          $ref: '#/components/schemas/WeatherResponseWindSpeed'
+    WeatherResponseWindSpeed:
+      type: object
+      description: Wind speed information
+      properties:
+        unit:
+          type: string
+          description: Unit of wind speed
+        value:
+          type: integer
+          description: Wind speed value
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        error:
+          $ref: '#/components/schemas/ApiError'
+      required:
+        - error
+      description: An error response
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A server defined error code that uniquely identifies error
+        message:
+          type: string
+          description: >-
+            A human-readable description of the error encountered while
+            processing the request
+        target:
+          type: string
+          description: The property in question that triggered the error
+        details:
+          type: array
+          description: >-
+            An array of more specific errors that led to the currently reported
+            error
+          items:
+            $ref: '#/components/schemas/ApiError'
+        innererror:
+          $ref: '#/components/schemas/InnerError'
+        link:
+          type: string
+          description: A link to relevant documentation for this error
+      required:
+        - code
+        - message
+      description: More specific information about an encountered error
+    InnerError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A server defined error code that uniquely identifies error
+        innererror:
+          $ref: '#/components/schemas/InnerError'
+      required:
+        - code
+      description: >-
+        An object containing more specific information than the current object
+        about the error.
